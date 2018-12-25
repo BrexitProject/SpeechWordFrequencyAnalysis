@@ -18,7 +18,7 @@ import nltk
 import xlsxwriter
 import operator
 
-default_stopwords = set(nltk.corpus.stopwords.words('english'))
+# default_stopwords = set(nltk.corpus.stopwords.words('english'))
 
 input_file = sys.argv[1]
 
@@ -36,7 +36,7 @@ words = [word for word in words if not word.isnumeric()]
 words = [word.lower() for word in words]
 
 # Remove stopwords
-words = [word for word in words if word not in default_stopwords]
+# words = [word for word in words if word not in default_stopwords]
 
 # Calculate frequency distribution
 freq_dist = nltk.FreqDist(words)
