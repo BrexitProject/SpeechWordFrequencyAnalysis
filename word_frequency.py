@@ -17,31 +17,40 @@ import codecs
 import nltk
 import xlsxwriter
 import operator
+import os
+import glob
+from collections import Counter
 
-# default_stopwords = set(nltk.corpus.stopwords.words('english'))
+default_stopwords = set(nltk.corpus.stopwords.words('english'))
 
 input_file = sys.argv[1]
 
-fp = codecs.open(input_file, 'r', 'utf-8')
+path = sys.argv[1]
 
-words = nltk.word_tokenize(fp.read())
+freq_dict = Counter()
 
-# Remove single-character tokens (mostly punctuation)
-words = [word for word in words if len(word) > 1]
+if os.path.isdir(path):
+  for filename in glob.glob(os.path.join(path, '*.txt')):
+    print(filename)
+    fp = codecs.open(filename, 'r', 'utf-8')
+    words = nltk.word_tokenize(fp.read()) 
+    words = [word for word in words if len(word) > 1]
+    words = [word for word in words if not word.isnumeric()]
+    words = [word.lower() for word in words]
+    file_freq_dict = Counter(nltk.FreqDist(words))
+    freq_dict = freq_dict + file_freq_dict
 
-# Remove numbers
-words = [word for word in words if not word.isnumeric()]
+if os.path.isfile(path):
+  fp = codecs.open(path, 'r', 'utf-8')
+  words = nltk.word_tokenize(fp.read()) 
+  words = [word for word in words if len(word) > 1]
+  words = [word for word in words if not word.isnumeric()]
+  words = [word.lower() for word in words]
+  file_freq_dict = Counter(nltk.FreqDist(words))
+  freq_dict = freq_dict + file_freq_dict
 
-# Lowercase all words (default_stopwords are lowercase too)
-words = [word.lower() for word in words]
-
-# Remove stopwords
-# words = [word for word in words if word not in default_stopwords]
-
-# Calculate frequency distribution
-freq_dist = nltk.FreqDist(words)
 sorted_freqDist = sorted(
-    freq_dist.items(), key=operator.itemgetter(1), reverse=True)
+    freq_dict.items(), key=operator.itemgetter(1), reverse=True)
 
 workbook = xlsxwriter.Workbook('%s_word_frequency.xlsx' % input_file)
 worksheet = workbook.add_worksheet()
@@ -56,7 +65,5 @@ for pair in sorted_freqDist:
     worksheet.write(row, col + 1, pair[1])
 
 workbook.close()
-
-print(sorted_freqDist)
 
 fp.close()
